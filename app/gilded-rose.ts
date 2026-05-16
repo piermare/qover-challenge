@@ -18,6 +18,7 @@ enum ItemType {
   LEGENDARY = "LEGENDARY",
   INCREASING = "INCREASING",
   BACKSTAGE_PASS = "BACKSTAGE_PASS",
+  CONJURED = "CONJURED",
 }
 
 function ensureBounds(value: number, min: number, max: number): number {
@@ -32,6 +33,7 @@ function getItemType(item: Item): ItemType {
   if (item.name === "Sulfuras, Hand of Ragnaros") return ItemType.LEGENDARY;
   if (item.name === "Aged Brie") return ItemType.INCREASING;
   if (item.name === "Backstage passes to a TAFKAL80ETC concert") return ItemType.BACKSTAGE_PASS;
+  if (item.name.startsWith("Conjured")) return ItemType.CONJURED;
   return ItemType.NORMAL;
 }
 
@@ -39,6 +41,7 @@ const updateStrategies: Record<ItemType, (item: Item) => void> = {
   [ItemType.LEGENDARY]: updateLegendary,
   [ItemType.INCREASING]: updateIncreasing,
   [ItemType.BACKSTAGE_PASS]: updateBackstagePass,
+  [ItemType.CONJURED]: updateConjured,
   [ItemType.NORMAL]: updateNormal,
 };
 
@@ -63,6 +66,12 @@ function updateBackstagePass(item: Item): void {
 function updateNormal(item: Item): void {
   item.sellIn--;
   const adjustment = item.sellIn < 0 ? -2 : -1;
+  applyAdjustment(item, adjustment);
+}
+
+function updateConjured(item: Item): void {
+  item.sellIn--;
+  const adjustment = item.sellIn < 0 ? -4 : -2;
   applyAdjustment(item, adjustment);
 }
 
