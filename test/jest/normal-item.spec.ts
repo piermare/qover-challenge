@@ -36,4 +36,10 @@ describe('Normal item', () => {
     new GildedRose(items).updateQuality();
     expect(items[0].quality).toBe(0);
   });
+
+  it('sellIn continues to decrement when already negative', () => {
+    const items = [new Item('Elixir of the Mongoose', -1, 10)];
+    new GildedRose(items).updateQuality();
+    expect(items[0].sellIn).toBe(-2);
+  });
 });

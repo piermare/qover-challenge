@@ -42,4 +42,10 @@ describe('Aged Brie', () => {
     new GildedRose(items).updateQuality();
     expect(items[0].quality).toBe(2);
   });
+
+  it('sellIn continues to decrement when already negative', () => {
+    const items = [new Item('Aged Brie', -1, 10)];
+    new GildedRose(items).updateQuality();
+    expect(items[0].sellIn).toBe(-2);
+  });
 });

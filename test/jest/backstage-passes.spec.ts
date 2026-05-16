@@ -42,4 +42,10 @@ describe('Backstage passes', () => {
     new GildedRose(items).updateQuality();
     expect(items[0].quality).toBe(1);
   });
+
+  it('sellIn continues to decrement when already negative', () => {
+    const items = [new Item('Backstage passes to a TAFKAL80ETC concert', -1, 0)];
+    new GildedRose(items).updateQuality();
+    expect(items[0].sellIn).toBe(-2);
+  });
 });
