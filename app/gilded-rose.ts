@@ -10,6 +10,62 @@ export class Item {
   }
 }
 
+const MIN_QUALITY = 0;
+const MAX_QUALITY = 50;
+
+enum ItemType {
+  NORMAL = "NORMAL",
+  LEGENDARY = "LEGENDARY",
+  INCREASING = "INCREASING",
+  BACKSTAGE_PASS = "BACKSTAGE_PASS",
+}
+
+function ensureBounds(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function applyAdjustment(item: Item, adjustment: number): void {
+  item.quality = ensureBounds(item.quality + adjustment, MIN_QUALITY, MAX_QUALITY);
+}
+
+function getItemType(item: Item): ItemType {
+  if (item.name === "Sulfuras, Hand of Ragnaros") return ItemType.LEGENDARY;
+  if (item.name === "Aged Brie") return ItemType.INCREASING;
+  if (item.name === "Backstage passes to a TAFKAL80ETC concert") return ItemType.BACKSTAGE_PASS;
+  return ItemType.NORMAL;
+}
+
+const updateStrategies: Record<ItemType, (item: Item) => void> = {
+  [ItemType.LEGENDARY]: updateLegendary,
+  [ItemType.INCREASING]: updateIncreasing,
+  [ItemType.BACKSTAGE_PASS]: updateBackstagePass,
+  [ItemType.NORMAL]: updateNormal,
+};
+
+function updateLegendary(_item: Item): void {}
+
+function updateIncreasing(item: Item): void {
+  item.sellIn--;
+  const adjustment = item.sellIn < 0 ? 2 : 1;
+  applyAdjustment(item, adjustment);
+}
+
+function updateBackstagePass(item: Item): void {
+  item.sellIn--;
+  if (item.sellIn < 0) {
+    item.quality = MIN_QUALITY;
+    return;
+  }
+  const adjustment = item.sellIn < 5 ? 3 : item.sellIn < 10 ? 2 : 1;
+  applyAdjustment(item, adjustment);
+}
+
+function updateNormal(item: Item): void {
+  item.sellIn--;
+  const adjustment = item.sellIn < 0 ? -2 : -1;
+  applyAdjustment(item, adjustment);
+}
+
 export class GildedRose {
   items: Array<Item>;
 
@@ -18,52 +74,9 @@ export class GildedRose {
   }
 
   updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
-      }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
-      }
+    for (const item of this.items) {
+      updateStrategies[getItemType(item)](item);
     }
-
     return this.items;
   }
 }
